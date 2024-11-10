@@ -4,7 +4,7 @@ import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './components/header/header.component';
 import { TodoCardComponent } from './components/todo-card/todo-card.component';
 import { SchoolData, SchoolService } from './services/school.service';
-import { filter, from, map, of, Subject, takeUntil, zip } from 'rxjs';
+import { filter, from, map, of, Subject, switchMap, takeUntil, zip } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -51,11 +51,10 @@ export class AppComponent implements OnInit, OnDestroy {
     },
   ]);
 
+  private studentUserId = '2';
+
   ngOnInit(): void {
-    this.getSchoolData();
-    this.getMultipliedAges();
-    this.getPeopleProfessions();
-    this.getSoftwareDevelopersNames();
+    this.handleFindStudentsById();
   }
 
   public getSchoolData(): void {
@@ -102,6 +101,21 @@ export class AppComponent implements OnInit, OnDestroy {
     })
   }
 
+  handleFindStudentsById(): void {
+    this.schoolService.getStudents()
+    .pipe(
+      switchMap((students) => this.findStudentsById(students, this.studentUserId))
+    ).subscribe({
+      next: (res) => {
+        console.log(res)
+      }
+    })
+  }
+
+  findStudentsById(students: Array<SchoolData>, userId: string) {
+    return of([students.find((student) => student.id === userId)]);
+  }
+ 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
