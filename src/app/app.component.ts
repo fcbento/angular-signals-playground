@@ -4,7 +4,7 @@ import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './components/header/header.component';
 import { TodoCardComponent } from './components/todo-card/todo-card.component';
 import { SchoolData, SchoolService } from './services/school.service';
-import { from, map, of, Subject, takeUntil, zip } from 'rxjs';
+import { filter, from, map, of, Subject, takeUntil, zip } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -44,12 +44,18 @@ export class AppComponent implements OnInit, OnDestroy {
       age: 1,
       profession: 'Back-end Developer'
     },
+    {
+      name: 'Jeniffer',
+      age: 12,
+      profession: 'Back-end Developer'
+    },
   ]);
 
   ngOnInit(): void {
     this.getSchoolData();
     this.getMultipliedAges();
     this.getPeopleProfessions();
+    this.getSoftwareDevelopersNames();
   }
 
   public getSchoolData(): void {
@@ -76,6 +82,19 @@ export class AppComponent implements OnInit, OnDestroy {
   getPeopleProfessions(): void {
     this.peopleData
     .pipe(map((people) => people.profession))
+    .subscribe({
+      next: (res) => {
+        console.log(res)
+      }
+    })
+  }
+
+  getSoftwareDevelopersNames(): void {
+    this.peopleData
+    .pipe(
+      filter((people) => people.profession === 'Back-end Developer'),
+      map((people) => people.name)
+    )
     .subscribe({
       next: (res) => {
         console.log(res)
