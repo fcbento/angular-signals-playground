@@ -4,7 +4,7 @@ import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './components/header/header.component';
 import { TodoCardComponent } from './components/todo-card/todo-card.component';
 import { SchoolData, SchoolService } from './services/school.service';
-import { Subject, takeUntil, zip } from 'rxjs';
+import { from, map, of, Subject, takeUntil, zip } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -27,8 +27,29 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private readonly destroy$: Subject<void> = new Subject();
 
+  private ages = of(20, 30, 40, 50, 60, 70);
+  private peopleData = from([
+    {
+      name: 'Felipe',
+      age: 33,
+      profession: 'Software Developer'
+    },
+    {
+      name: 'Otavio',
+      age: 3,
+      profession: 'UX Developer'
+    },
+    {
+      name: 'Joaquim',
+      age: 1,
+      profession: 'Back-end Developer'
+    },
+  ]);
+
   ngOnInit(): void {
     this.getSchoolData();
+    this.getMultipliedAges();
+    this.getPeopleProfessions();
   }
 
   public getSchoolData(): void {
@@ -40,6 +61,26 @@ export class AppComponent implements OnInit, OnDestroy {
         console.log('TEACHERS', response[1])
       }
     });
+  }
+
+  getMultipliedAges(): void {
+    this.ages
+    .pipe(map((age) => age * 2))
+    .subscribe({
+      next: (res) => {
+        //console.log(res)
+      }
+    })
+  }
+
+  getPeopleProfessions(): void {
+    this.peopleData
+    .pipe(map((people) => people.profession))
+    .subscribe({
+      next: (res) => {
+        console.log(res)
+      }
+    })
   }
 
   ngOnDestroy(): void {
