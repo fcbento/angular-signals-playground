@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output, WritableSignal } from '@angular/core';
 import { HeaderComponent } from './components/header/header.component';
 import { TodoCardComponent } from './components/todo-card/todo-card.component';
 import { SchoolData, SchoolService } from './services/school.service';
 import { filter, from, map, of, Subject, switchMap, takeUntil, zip } from 'rxjs';
+import { TodoSignalsService } from './services/todo-signals.service';
+import { Todo } from './model/todo.model';
 
 @Component({
   selector: 'app-root',
@@ -14,21 +15,28 @@ import { filter, from, map, of, Subject, switchMap, takeUntil, zip } from 'rxjs'
   styleUrl: './app.component.scss'
 })
 export class AppComponent implements OnInit, OnDestroy {
+  title = 'todo-list-16';
+  @Input() public projectName!: string;
+  @Output() public outputEvent = new EventEmitter<string>();
+  public todoSignal!: WritableSignal<Todo[]>;
+  public renderTestMessage = false;
+  public isDone = false;
 
-  private schoolService = inject(SchoolService);
+  private readonly schoolService = inject(SchoolService);
+  private readonly todoSignalService = inject(TodoSignalsService);
 
   public students: Array<SchoolData> = [];
   public teachers: Array<SchoolData> = [];
 
-  private zipSchoolResponses$ = zip(
+  private readonly zipSchoolResponses$ = zip(
     this.schoolService.getStudents(),
     this.schoolService.getTeachers()
   );
 
   private readonly destroy$: Subject<void> = new Subject();
 
-  private ages = of(20, 30, 40, 50, 60, 70);
-  private peopleData = from([
+  private readonly ages = of(20, 30, 40, 50, 60, 70);
+  private readonly peopleData = from([
     {
       name: 'Felipe',
       age: 33,
@@ -51,7 +59,7 @@ export class AppComponent implements OnInit, OnDestroy {
     },
   ]);
 
-  private studentUserId = '2';
+  private readonly studentUserId = '2';
 
   ngOnInit(): void {
     this.handleFindStudentsById();
@@ -114,6 +122,23 @@ export class AppComponent implements OnInit, OnDestroy {
 
   findStudentsById(students: Array<SchoolData>, userId: string) {
     return of([students.find((student) => student.id === userId)]);
+  }
+
+  handleEmit() {
+    this.outputEvent.emit(this.projectName);
+  }
+  
+  public handleCreateTodo(todo: Todo): void {
+    if(todo) {
+      this.todoSignalService.updateTodos(todo);
+      this.todoSignal = this.todoSignalService.todoState;
+    }
+  }
+
+  public handleCheckIsDone() {
+    setTimeout(() => {
+      this.isDone = true
+    }, 200)
   }
  
   ngOnDestroy(): void {
